@@ -7,7 +7,8 @@ package pila;
 
 /**
  *
- * @author robot
+ * @author SLGA
+ * @param <T>
  */
 public class PilaA<T> implements PilaADT<T> {
     private T[] pila;
