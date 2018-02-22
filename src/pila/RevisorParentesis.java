@@ -35,7 +35,7 @@ public class RevisorParentesis {
                 try{
                     pila.pop();
                 }catch(ExceptionPilaVacia e){
-                    System.err.print(e);
+                    //System.err.print(e);
                     res=false;
                 }
             i++;

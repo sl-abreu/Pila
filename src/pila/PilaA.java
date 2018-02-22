@@ -51,6 +51,23 @@ public class PilaA<T> implements PilaADT<T> {
             return pila[tope];
         throw new ExceptionPilaVacia();
     }
+    @Override
+    public boolean equals(PilaADT<T> otra) {
+        PilaA<T> aux1=new PilaA(),aux2=new PilaA();
+        boolean res=false;
+        
+        while(!this.isEmpty() && !otra.isEmpty() && this.peek().equals(otra.peek())){
+            aux1.push(this.pop());
+            aux2.push(otra.pop());
+        }
+        if(this.isEmpty() && otra.isEmpty())
+            res=true;
+        while(!aux1.isEmpty()){
+            this.push(aux1.pop());
+            otra.push(aux2.pop());
+        }
+        return res;
+    }
     
     /*  versiones anteriores
     @Override

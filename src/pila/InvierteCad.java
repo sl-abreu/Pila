@@ -33,15 +33,18 @@ public class InvierteCad {
         PilaA<Character> pila=new PilaA();
         StringBuilder cad=new StringBuilder();
         
-        for(int i=0;i<cadInicial.length();i++)
-            pila.push(cadInicial.charAt(i));
-        while(!pila.isEmpty())
-            cad.append(pila.pop());
-        cadInvertida=cad.toString();
+        cadInvertida=null;
+        if(cadInicial!=null){
+            for(int i=0;i<cadInicial.length();i++)
+                pila.push(cadInicial.charAt(i));
+            while(!pila.isEmpty())
+                cad.append(pila.pop());
+            cadInvertida=cad.toString();
+        }
     }
     
     public static void main(String[] args) {
-        InvierteCad prueba=new InvierteCad("reconocer");
+        InvierteCad prueba=new InvierteCad("Silvestre Leonardo Gonzalez Abreu");
         System.out.println(prueba.getCadInvertida());
     }
 }
