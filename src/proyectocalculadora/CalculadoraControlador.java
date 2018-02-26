@@ -5,14 +5,29 @@
  */
 package proyectocalculadora;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import pila.PilaA;
 
 
 /**
  *
- * @author robot
+ * <pre>
+ * CalculadoraControlador
+ * 
+ * Recibe, procesa y maneja la información recibida de la interfaz gráfica
+ * </pre>
+ * @author Silvestre Leonardo González Abreu
+ * @deprecated 
  */
-public class CalculadoraControlador {
+public class CalculadoraControlador extends CalculadoraVista{
+
+    public CalculadoraControlador() {
+        super();
+        super.evaluaBut.addActionListener(new EscuchadorBut());
+        super.limpBut.addActionListener(new EscuchadorBut());
+    }
+    
     /**
      * 
      * @param op Caracter a analizar.
@@ -78,7 +93,7 @@ public class CalculadoraControlador {
      *  </ul>
      */
     public static boolean revisaExpresion(String exp){
-        PilaA<Character> ver=new PilaA();
+        PilaA<Character> verf=new PilaA();
         char aux;
         boolean res=false,banOp=false,banPun=false;
         int i=0;
@@ -87,64 +102,83 @@ public class CalculadoraControlador {
             i++;
         aux=exp.charAt(i);
         if(Character.isDigit(aux) || aux=='(' || aux=='-'){
-            ver.push(aux);
+            verf.push(aux);
             res=true;
             i++;
             while(i<exp.length() && res){
                 aux=exp.charAt(i);
                 if(aux!=' '){
-                    if(Character.isDigit(aux) || aux=='('){
-                        if(ver.peek()!=')'){
-                            if(ver.peek()!='(')
-                                ver.pop();
-                            ver.push(aux);
-                        }
-                        else
-                            res=false;
+                    if(Character.isDigit(aux) && verf.peek()!=')'){
+                        if(verf.peek()!='(')
+                            verf.pop();
+                        verf.push(aux);
                     }
-                    else if(esOperador(aux)){
-                        if(Character.isDigit(ver.peek()) || ver.peek()==')' || (aux=='-' && !banOp && ver.peek()!='.')){
+                    else if(aux=='(' && (esOperador(verf.peek()) || verf.peek()=='(')){
+                        if(verf.peek()!='(')
+                            verf.pop();
+                        verf.push(aux);
+                    }
+                    else if(esOperador(aux) && (Character.isDigit(verf.peek()) || verf.peek()==')' || (aux=='-' && !banOp && verf.peek()!='.'))){
+                        banPun=false;
+                        if(aux=='-' && verf.peek()=='-')
+                            banOp=true;
+                        else
+                            banOp=false;
+                        if(verf.peek()!='(')
+                            verf.pop();
+                        verf.push(aux);
+                    }
+                    else if(aux=='.' && (Character.isDigit(verf.peek()) && !banPun)){
+                        banPun=true;
+                        verf.pop();
+                        verf.push(aux);
+                    }
+                    else if(aux==')' && !verf.isEmpty()){
+                        char temp=verf.pop();
+                        if((Character.isDigit(temp) || temp==')') && !verf.isEmpty() && verf.pop()=='('){
                             banPun=false;
-                            if(aux=='-' && ver.peek()=='-')
-                                banOp=true;
-                            else
-                                banOp=false;
-                            if(ver.peek()!='(')
-                                ver.pop();
-                            ver.push(aux);
+                            verf.push(aux);
                         }
                         else
                             res=false;
                     }
-                    else if(aux=='.'){
-                        if(Character.isDigit(ver.peek()) && !banPun){
-                            banPun=true;
-                            ver.pop();
-                            ver.push(aux);
-                        }
-                        else
-                            res=false;
-                    }
-                    else if(aux==')'){
-                        if(!ver.isEmpty() && Character.isDigit(ver.pop()) && !ver.isEmpty() && ver.peek()=='('){
-                            banPun=false;
-                            ver.pop();
-                            ver.push(')');
-                        }
-                        else res=false;
-                    }
-                    else if(Character.isLetter(aux))
+                    else
                         res=false;
                 }
                 i++;
             }
-            if(!ver.isEmpty() && !(Character.isDigit(ver.peek()) || ver.peek()==')'))
-                res=false;
+            if(res && !verf.isEmpty()){
+                aux=verf.pop();
+                if(!verf.isEmpty() || !(Character.isDigit(aux) || aux==')'))
+                    res=false;
+            }  
         }
         return res;
     }
     
+    private class EscuchadorBut implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if(e.getActionCommand().charAt(0)=='E'){
+                String exp=expTxt.getText();
+                if(!exp.isEmpty() && revisaExpresion(exp)){
+                    resTxt.setText("Vas por buen camino.");
+                }
+                else
+                    resTxt.setText("Error de sintaxis, favor de revisar la expresión.");
+            }
+            else{
+                resTxt.setText("");
+                expTxt.setText("");
+            }
+        }
+    }
+    
     public static void main(String[] args) {
-        System.out.println(revisaExpresion(" ( (- 0.2+44.53.0) +(2-2)-0.2*-2)"));
+        
+        //System.out.println(revisaExpresion("((2-2))"));
+        
+        CalculadoraControlador pru=new CalculadoraControlador();
+        pru.setVisible(true);
     }
 }

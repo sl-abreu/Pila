@@ -15,7 +15,10 @@ public class ProyectoCalculadora {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
+        System.out.println(Calculadora.revisaExpresion("(2.2+4*(-8+2)^3)"));
+        String[] arr=Calculadora.conviertePostFija("((2.2+4)*(-8+2)^3)");
+        for(int i=0;i<arr.length;i++)
+            System.out.println(arr[i]+"\n");
     }
     
 }

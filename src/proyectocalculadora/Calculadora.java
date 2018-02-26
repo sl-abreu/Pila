@@ -9,7 +9,21 @@ import pila.PilaA;
 
 /**
  *
- * @author robot
+ * <pre>
+ * Interfaz gráfica con funcionalidad de una calculadora científica,
+ * es capaz de evaluar expresiones respetando la jerarquía de operaciones
+ * o el orden de los paréntesis en caso de que existan.
+ * 
+ * Realiza tres recorridos a la expresión, en la primera se revisa la sintaxis
+ * de la expresión dada por el usuario, en caso de que sea correcta se realiza
+ * el segundo recorrido, en el que se convierte la expresión de notación infija
+ * a notación postfija, con el fin de hacer la posterior evaluación posible. Por
+ * último, se evalúa la expresión y se muestra el valor correspondiente.
+ * 
+ * En caso de que la sintaxis fuera incorrecta, se muestra un mensaje apropiado
+ * al usuario y no se pasa al segundo y tercer recorrido.
+ * </pre>
+ * @author SLGA
  */
 public class Calculadora extends javax.swing.JFrame {
 
@@ -101,17 +115,20 @@ public class Calculadora extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void evaluaButActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_evaluaButActionPerformed
-        // TODO add your handling code here:
-        String exp=expTxt.getText();
+        String resS, exp=expTxt.getText();
                 if(!exp.isEmpty() && revisaExpresion(exp)){
-                    resTxt.setText("Vas por buen camino.");
+                    Double resD=evaluaPostFija(conviertePostFija(exp));
+                    if(!resD.isNaN())
+                        resS=""+resD;
+                    else
+                        resS="¡Valor indefinido!";
                 }
                 else
-                    resTxt.setText("Error de sintaxis, favor de revisar la expresión.");
+                    resS="Error de sintaxis, favor de revisar la expresión.";
+                resTxt.setText(resS);
     }//GEN-LAST:event_evaluaButActionPerformed
 
     private void limpButActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_limpButActionPerformed
-        // TODO add your handling code here:
         resTxt.setText("");
         expTxt.setText("");
     }//GEN-LAST:event_limpButActionPerformed
@@ -174,7 +191,7 @@ public class Calculadora extends javax.swing.JFrame {
      *  </ul>
      */
     public static int prioridad(char op){
-        int prio=-1;
+        int prio;
         
         switch (op) {
             case '+':
@@ -189,6 +206,7 @@ public class Calculadora extends javax.swing.JFrame {
                 prio=3;
                 break;
             default:
+                prio=-1;
                 break;
         }
         return prio;
@@ -290,5 +308,137 @@ public class Calculadora extends javax.swing.JFrame {
         }
         return res;
     }
-
+    /**
+     * 
+     * @param exp   Cadena a analizar
+     * @param ini   Posición del paréntesis que abre.
+     * @return  La posición del paréntesis que cierra, correspondiente al encontrado en la posición ini.
+     */
+    private static int rangoParentesis(String exp, int ini){
+        do{
+            ini++;
+            if(exp.charAt(ini)=='(')
+                ini=rangoParentesis(exp,ini);
+        }while(exp.charAt(ini)!=')');
+        ini++;
+        return ini;
+    }
+    /**
+     * 
+     * @param exp   Cadena (expresión matemática) a convertir.
+     * @return  Un arreglo de String que contiene el equivalente a la expresión en notación postfija.
+     */
+    public static String[] conviertePostFija(String exp){
+        String[] auxArr, postFija=new String[exp.length()+1];
+        PilaA<Character> opers=new PilaA();
+        int i=0,j=0,auxI;
+        char temp;
+        
+        if(exp.charAt(0)=='-'){
+            postFija[0]="-";
+            i++;
+        }
+        while(i<exp.length()){
+            temp=exp.charAt(i);
+            if(Character.isDigit(temp)){
+                auxI=i;
+                i++;
+                while(i<exp.length() && (Character.isDigit(exp.charAt(i)) || exp.charAt(i)=='.'))
+                    i++;
+                if(postFija[j]!=null)
+                    postFija[j]+=exp.substring(auxI, i);
+                else
+                    postFija[j]=exp.substring(auxI, i);
+                j++;
+            }
+            else if(esOperador(temp)){
+                while(!opers.isEmpty() && prioridad(temp)<=prioridad(opers.peek())){
+                    postFija[j]=""+opers.pop();
+                    j++;
+                }
+                opers.push(temp);
+                i++;
+                if(i<exp.length() && exp.charAt(i)=='-'){
+                    postFija[j]="-";
+                    i++;
+                }
+            }
+            /*
+            En caso de que se lea un '(', se busca el ')' correspondiente,
+            y se llama de manera recursiva este método para que convierta
+            la expresión contenida dentro de los paréntesis con el método
+            substring de la clase String.
+             */
+            else if(temp=='('){
+                int k=0;
+                auxI=i;
+                i=rangoParentesis(exp,auxI);
+                auxArr=conviertePostFija(exp.substring(auxI+1, i-1));
+                while(!auxArr[k].equals(";")){
+                    postFija[j]=auxArr[k];
+                    j++;
+                    k++;
+                }
+            }
+            else if(temp==' ')
+                i++;
+        }
+        while(!opers.isEmpty()){
+            postFija[j]=""+opers.pop();
+            j++;
+        }
+        postFija[j]=";";
+        return postFija;
+    }
+    /**
+     * 
+     * @param postFija  Arreglo de String que contiene la expresión a evaluar en notación postfija.
+     * @return Un double equivalente a la expresión dada.
+     */
+    public static double evaluaPostFija(String[] postFija){
+        PilaA<Double> calcs=new PilaA();
+        String temp;
+        double num1,num2,res;
+        int i=0;
+        
+        while(!postFija[i].equals(";")){
+            temp=postFija[i];
+            if(temp.length()==1 && esOperador(temp.charAt(0))){
+                num2=calcs.pop();
+                num1=calcs.pop();
+                switch(temp.charAt(0)){
+                    case '+':
+                        calcs.push(num1+num2);
+                        break;
+                    case '-':
+                        calcs.push(num1-num2);
+                        break;
+                    case '*':
+                        calcs.push(num1*num2);
+                        break;
+                    case '/':
+                        if(num2!=0)
+                            calcs.push(num1/num2);
+                        else if(num1==0)
+                            calcs.push(Double.NaN);
+                        else if(num1>0)
+                            calcs.push(Double.POSITIVE_INFINITY);
+                        else
+                            calcs.push(Double.NEGATIVE_INFINITY);
+                        break;
+                    case '^':
+                        calcs.push(Math.pow(num1, num2));
+                        break;
+                }
+            }
+            else{
+                calcs.push(Double.parseDouble(temp));
+            }
+            i++;
+        }
+        res=calcs.pop();
+        if(!calcs.isEmpty())
+            res=909.909;
+        return res;
+    }
 }
