@@ -126,20 +126,61 @@ public class ManejadorPilasGenerico {
             p.push(aux.pop());
         return cad.toString();
     }
+    /**
+     * Ejercicio del primer parcial de primavera 2015
+     * 
+     * @param <T>
+     * @param p1
+     * @param p2
+     * @param n
+     * @return 
+     */
+    public static <T> boolean sonCasiIguales(PilaADT<T> p1,PilaADT<T> p2,int n){
+        PilaA<T> aux1=new PilaA(),aux2=new PilaA();
+        int i=0;
+        boolean res=false;
+        
+        while(!p1.isEmpty())
+            aux1.push(p1.pop());
+        while(!p2.isEmpty())
+            aux2.push(p2.pop());
+        while(i<n && !aux1.isEmpty() && !aux2.isEmpty() && aux2.peek().equals(aux1.peek())){
+            p1.push(aux1.pop());
+            p2.push(aux2.pop());
+            i++;
+        }
+        if(i==n)
+            res=true;
+        while(!aux1.isEmpty())
+            p1.push(aux1.pop());
+        while(!aux2.isEmpty())
+            p2.push(aux2.pop());
+        return res;        
+    }
     
     public static void main(String[] args) {
         PilaA<Integer> pila=new PilaA(),pila2=new PilaA();
+        pila.push(8);
+        pila.push(1);
         pila.push(4);
-        pila.push(7);
-        pila.push(7);
         pila.push(3);
         pila.push(2);
-        pila.push(2);
-        pila.push(3);
-        pila.push(3);
+        pila.push(6);
+        pila.push(38);
+        pila.push(31);
+        pila2.push(8);
+        pila2.push(1);
+        pila2.push(4);
+        pila2.push(3);
+        pila2.push(2);
+        pila2.push(2);
+        pila2.push(3);
+        pila2.push(3);
+        
         System.out.println(imprimePila(pila));
-        invierte(pila);
-        eliminaRepetidosConsecutivos(pila);
+        System.out.println(imprimePila(pila2));
+        System.out.println(sonCasiIguales(pila,pila2,5));
         System.out.println(imprimePila(pila));
+        System.out.println(imprimePila(pila2));
     }
 }
